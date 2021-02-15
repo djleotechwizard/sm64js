@@ -202,20 +202,7 @@ window.onload = async () => {
             },
             body: JSON.stringify({ code: url_params.get("code") })
         })
-        const body = await res.json()
-        console.log("BODY", body)
-    // } else if (process.env.PRODUCTION == undefined) {
-    //     /// send access code to server
-    //     const accessCodeMsg = new AccessCodeMsg()
-    //     accessCodeMsg.setAccessCode("122345")
-    //     accessCodeMsg.setType("discord")
-    //     const initializationMsg = new InitializationMsg()
-    //     initializationMsg.setAccessCodeMsg(accessCodeMsg)
-    //     const sm64jsMsg = new Sm64JsMsg()
-    //     sm64jsMsg.setInitializationMsg(initializationMsg)
-    //     const rootMsg = new RootMsg()
-    //     rootMsg.setUncompressedSm64jsMsg(sm64jsMsg)
-    //     sendData(rootMsg.serializeBinary())
+        Socket.recvAuthorizedUser(res)
     }
 
 }
