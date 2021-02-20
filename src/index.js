@@ -52,9 +52,10 @@ const on_anim_frame = (time) => {
 
 }
 
-const main_func = () => {
-    Object.sm64vm = new SM64vm();
+Object.sm64vm = new SM64vm();
 
+const main_func = () => {
+    Object.sm64vm.runInterface();
     /// WebGL class and n64GfxProcessor class are initialized with their constructor when they are imported
     Game.attachInterfaceToGfxProcessor(send_display_list)
 
