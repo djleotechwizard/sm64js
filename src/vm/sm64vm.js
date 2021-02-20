@@ -9,7 +9,6 @@ import { LevelUpdateInstance as LevelUpdate } from "../game/LevelUpdate"
 // import * as MarioConstants from "../game/constants/constants.json"
 import { CodeJar } from 'codejar'
 import Prism from 'prismjs';
-import * as Interact from "../game/Interaction"
 
 const highlight = function(editor) {
     var code = editor.textContent;
@@ -37,9 +36,6 @@ export class SM64vm {
         this.vm.realm.global.console = { log: this.consoleLog };
         this.vm.realm.global.stringify = function(obj) { return JSON.stringify(obj); };
         this.vm.realm.global.cancel = hooker.preempt;
-        this.vm.realm.global.addCoin = function() {
-            Interact.interact_coin(LevelUpdate.gMarioState, null, {  oDamageOrCoinValue: 1 })
-        }
         var ref = this;
         this.vm.realm.global.setInterval = function(f, time) {
             var errorCatcher = function() { // VM requires recursive error checking for some reason
