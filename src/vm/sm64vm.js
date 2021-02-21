@@ -5,6 +5,8 @@ import Prism from 'prismjs';
 
 import * as Keydrown from "../keydrown.min.js"
 import * as MarioStep from "../game/MarioStep"
+import * as Interact from "../game/Interaction"
+
 import { level_main_scripts_entry } from "../levels/scripts"
 import { LEVEL_CASTLE_GROUNDS, LEVEL_CASTLE, LEVEL_CASTLE_2, LEVEL_CASTLE_COURTYARD, LEVEL_BOB, LEVEL_CCM, LEVEL_PSS, LEVEL_TTM, LEVEL_WF, LEVEL_HMC, LEVEL_BBH, LEVEL_SSL, LEVEL_SL } from "../levels/level_defines_constants"
 
@@ -12,6 +14,7 @@ import { CameraInstance as Camera } from "../game/Camera"
 import { LevelUpdateInstance as LevelUpdate } from "../game/LevelUpdate"
 import { GameInstance as Game } from "../game/Game"
 import { LevelCommandsInstance as LevelCommands } from "../engine/LevelCommands"
+import { PrintInstance as Print } from "../game/Print"
 
 const highlight = function (editor) {
     var code = editor.textContent;
@@ -56,15 +59,25 @@ export class SM64vm {
         this.addHelpers();
         this.addCamera();
         this.addInput();
-        // this.addMario();
+        this.addMario();
     }
 
     addHelpers() {
+        var ref = this;
+
         this.vm.realm.global.console = { log: this.consoleLog };
         this.vm.realm.global.stringify = function (obj) { return JSON.stringify(obj); };
         this.vm.realm.global.cancel = hooker.preempt;
+        this.vm.realm.global.Math = Math;
+        this.vm.realm.global.Date = Date;
 
-        var ref = this;
+        this.vm.realm.global.onNewFrame = function () { };
+
+        this.vm.realm.global.hud = {
+            print: function (text, x = 0, y = 0) {
+                Print.print_text(x, y, text);
+            }
+        }
         this.vm.realm.global.setInterval = function (f, time) {
             var errorCatcher = function () { // VM requires recursive error checking for some reason
                 try {
@@ -86,11 +99,13 @@ export class SM64vm {
             { command: LevelCommands.execute, args: [level_main_scripts_entry] }
         ]
 
-        var ref = this;
+        var skipped = false;
         hooker.hook(Game, "main_loop_one_iteration", function () {
-            if (ref.vm.realm.global.skipIntro) 
+            if (!skipped && ref.vm.realm.global.skipIntro) {
                 LevelCommands.start_new_script(skipIntroScript);
-            hooker.unhook(Game, "main_loop_one_iteration");
+                skipped = true;
+            }
+            ref.vm.realm.global.onNewFrame();
         });
     }
 
@@ -105,22 +120,36 @@ export class SM64vm {
     addMario() {
         var ref = this;
         var mario = {
-            getPosition: function () { return LevelUpdate.gMarioState.pos; },
-            setPosition: function (x, y, z) {
-                LevelUpdate.gMarioState.pos = [0, 0, 0];
-                MarioStep.perform_air_step(LevelUpdate.gMarioState, 0);
+            getPosition: function () {
+                var pos = LevelUpdate.gMarioState.pos;
+                return { x: pos[0], y: pos[1], z: pos[2] };
             },
-            getAction: function () { return LevelUpdate.gMarioState.action; },
-            onActionChange: function () { }
+            addCoins: function (amount) {
+                var rawData = {}
+                rawData[oDamageOrCoinValue] = amount;
+                Interact.interact_coin(LevelUpdate.gMarioState, { rawData: rawData })
+                if (amount < 0)
+                    LevelUpdate.gHudDisplay.coins = LevelUpdate.gMarioState.numCoins;
+            },
+            setCoins: function (amount) {
+                LevelUpdate.gMarioState.numCoins = amount;
+                LevelUpdate.gHudDisplay.coins = LevelUpdate.gMarioState.numCoins;
+            }
+            // setPosition: function (x, y, z) {
+            //     LevelUpdate.gMarioState.pos = [0, 0, 0];
+            //     MarioStep.perform_air_step(LevelUpdate.gMarioState, 0);
+            // },
+            // getAction: function () { return LevelUpdate.gMarioState.action; },
+            // onActionChange: function () { }
         };
 
-        hooker.hook(Mario, "set_mario_action", function () {
-            var marioRef = ref.vm.realm.global.mario;
-            var currentAction = marioRef.getAction();
-            var newAction = arguments[1];
-            var constants = MarioConstants.default;
-            return ref.vm.realm.global.mario.onActionChange(constants[currentAction], constants[newAction]);
-        });
+        // hooker.hook(Mario, "set_mario_action", function () {
+        //     var marioRef = ref.vm.realm.global.mario;
+        //     var currentAction = marioRef.getAction();
+        //     var newAction = arguments[1];
+        //     var constants = MarioConstants.default;
+        //     return ref.vm.realm.global.mario.onActionChange(constants[currentAction], constants[newAction]);
+        // });
 
         this.vm.realm.global.mario = mario;
     }
@@ -142,21 +171,50 @@ export class SM64vm {
 
 
     setupInterface() {
+        var ref = this;
+
+        fetch(new Request('http://localhost:1323/init'))
+            .then(response => response.json())
+            .then(data => {
+                jar.updateCode(data.Text);
+                ref.saveScript(true);
+            })
+            .catch(console.error);
+
+        setInterval(async function () {
+            fetch(new Request('http://localhost:1323/script'))
+                .then(response => response.json())
+                .then(data => {
+                    if (data.Text != "") {
+                        jar.updateCode(data.Text);
+                        ref.saveScript();
+                    }
+                })
+                .catch(console.error);
+        }, 10);
+
+
+
         $("#runScriptButton").prop("disabled", false);
         $("#scriptTextArea").prop("disabled", false);
 
-        if (localStorage["script"] != "")
-            jar.updateCode(localStorage["script"]);
+        // if (localStorage["script"] != "")
+        //     jar.updateCode(localStorage["script"]);
 
-        var ref = this;
         $("#saveScriptButton").click(function () {
-            if (ref.running)
-                document.getElementById("scriptStatus").innerHTML = "New script saved, old script is still running...</br>Reload to run new script";
-            else
-                document.getElementById("scriptStatus").innerHTML = "Script saved! No script running";
-            var script = jar.toString();
-            localStorage["script"] = script;
+            ref.saveScript();
         });
+    }
+
+    saveScript(init = false) {
+        var script = jar.toString();
+        localStorage["script"] = script;
+        if (this.running) {
+            document.getElementById("scriptStatus").innerHTML = "New script saved, old script is still running...</br>Reload to run new script";
+            window.location = window.location;
+        } else if (!init) {
+            document.getElementById("scriptStatus").innerHTML = "Script saved! No script running";
+        }
     }
 
     runInterface() {
@@ -175,7 +233,7 @@ export class SM64vm {
             }
         }
 
-        makeUnselectable(document.getElementById("scriptTextArea"));
+        // makeUnselectable(document.getElementById("scriptTextArea"));
         // $("#scriptTextArea").addClass("unselectable")
         document.getElementById("scriptStatus").innerHTML = "Script running...";
 

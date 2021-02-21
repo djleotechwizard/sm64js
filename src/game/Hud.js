@@ -98,6 +98,7 @@ class Hud {
         Gbi.gDPSetTextureImage(Game.gDisplayList, Gbi.G_IM_FMT_RGBA, Gbi.G_IM_SIZ_16b, 1, healthLUT[numHealthWedges - 1]);
         // Gbi.gDPLoadSync(Game.gDisplayList);
         // Gbi.gDPLoadBlock(Game.gDisplayList, Gbi.G_TX_LOADTILE, 0, 0, 32 * 32 - 1, Gbi.CALC_DXT(32, Gbi.G_IM_SIZ_16b_BYTES));
+	    Gbi.gsSP2Triangles( 0,  1,  2, 0x0,  0,  2,  3, 0x0),
         Gbi.gSP1Triangle(Game.gDisplayList, 0, 1, 2, 0);
         Gbi.gSP1Triangle(Game.gDisplayList, 0, 2, 3, 0);
     }

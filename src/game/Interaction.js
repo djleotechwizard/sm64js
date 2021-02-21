@@ -167,7 +167,7 @@ export const mario_handle_special_floors = (m) => {
     }
 }
 
-const interact_coin = (m, o) => {
+export const interact_coin = (m, o) => {
     m.numCoins += o.rawData[oDamageOrCoinValue]
     m.healCounter += 4 * o.rawData[oDamageOrCoinValue]
 
