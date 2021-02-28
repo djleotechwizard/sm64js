@@ -29,6 +29,18 @@ class HudDisplay {
     }
 };
 
+class HudDisplay {
+    constructor(lives, coins, stars, wedges, keys, flags, timer) {
+        this.lives = lives;
+        this.coins = coins;
+        this.stars = stars;
+        this.wedges = wedges;
+        this.keys = keys;
+        this.flags = flags;
+        this.timer = timer;
+    }
+};
+
 class LevelUpdate {
     constructor() {
         // HUDDisplayFlag enum
@@ -173,11 +185,9 @@ class LevelUpdate {
     update_hud_values() {
 
         if (this.gCurrCreditsEntry == null) {
-            var numHealthWedges = this.gMarioState.health > 0 ? this.gMarioState.health >> 8 : 0;
-            var displayCoins = this.gCurrCourseNum >= CourseTable.COURSE_MIN;
-            displayCoins = true;
+            const numHealthWedges = this.gMarioState.health > 0 ? this.gMarioState.health >> 8 : 0
 
-            if (displayCoins) {
+            if (Area.gCurrCourseNum > 0) {
                 this.gHudDisplay.flags |= this.HUD_DISPLAY_FLAG_COIN_COUNT;
             } else {
                 this.gHudDisplay.flags &= ~this.HUD_DISPLAY_FLAG_COIN_COUNT;
@@ -220,9 +230,9 @@ class LevelUpdate {
             this.gHudDisplay.stars = this.gMarioState.numStars;
             this.gHudDisplay.lives = this.gMarioState.numLives;
             this.gHudDisplay.keys = this.gMarioState.numKeys;
-    
+
             if (numHealthWedges > this.gHudDisplay.wedges) {
-                play_sound(SOUND_MENU_POWER_METER, gDefaultSoundArgs);
+                //play_sound(SOUND_MENU_POWER_METER, gDefaultSoundArgs);
             }
             this.gHudDisplay.wedges = numHealthWedges;
     

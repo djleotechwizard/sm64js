@@ -79,12 +79,6 @@ class Print {
         var length = 0;
         var srcIndex = 0;
     
-        // // Don't continue if there is no memory to do so.
-        // if ((sTextLabels[sTextLabelsCount] = mem_pool_alloc(gEffectsMemoryPool,
-        //                                                     sizeof(struct TextLabel))) == NULL) {
-        //     return;
-        // }
-    
         c = str[srcIndex];
     
         // Set the array with the text to print while finding length.

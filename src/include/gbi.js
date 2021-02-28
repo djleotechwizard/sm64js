@@ -705,7 +705,16 @@ export const gDPSetTextureImage = (displaylist, format, size, width, imageData) 
          }
      });
  }
- 
+
+export const gDPLoadBlock = (displaylist, tile, uls, ult, lrs) => { ///dxt skipped
+    displaylist.push({
+        words: {
+            w0: G_LOADBLOCK,
+            w1: { tile, uls, ult, lrs }
+        }
+    })
+}
+
 
 export const gDPLoadBlockTexture = (displaylist, width, height, format, image) => {
     displaylist.push(
@@ -925,14 +934,6 @@ export const gsDPSetTextureImage = (format, size, width, imageData) => {
         words: {
             w0: G_SETTIMG,
             w1: { format, size, width, imageData }
-        }
-    }
-}
-
-export const gsDPLoadSync = () => {
-    return {
-        words: {
-            w0: G_RDPLOADSYNC
         }
     }
 }
