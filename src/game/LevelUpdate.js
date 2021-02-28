@@ -15,6 +15,7 @@ const WARP_TYPE_NOT_WARPING = 0
 const WARP_TYPE_CHANGE_LEVEL = 1
 const WARP_TYPE_CHANGE_AREA = 2
 const WARP_TYPE_SAME_AREA = 3
+const WARP_NODE_CREDITS_MIN = 0xF8
 
 class HudDisplay {
     constructor(lives, coins, stars, wedges, keys, flags, timer) {
@@ -85,6 +86,23 @@ class LevelUpdate {
 
     lvl_init_or_update(initOrUpdate) {
         return initOrUpdate ? this.update_level() : this.init_level()
+    }
+
+    initiate_warp(destLevel, destArea, destWarpNode, arg3) {
+        if (destWarpNode >= WARP_NODE_CREDITS_MIN) {
+            this.sWarpDest.type = WARP_TYPE_CHANGE_LEVEL;
+        } else if (destLevel != Area.gCurrLevelNum) {
+            this.sWarpDest.type = WARP_TYPE_CHANGE_LEVEL;
+        } else if (destArea != Area.gCurrentArea.index) {
+            this.sWarpDest.type = WARP_TYPE_CHANGE_AREA;
+        } else {
+            this.sWarpDest.type = WARP_TYPE_SAME_AREA;
+        }
+    
+        this.sWarpDest.levelNum = destLevel;
+        this.sWarpDest.areaIdx = destArea;
+        this.sWarpDest.nodeId = destWarpNode;
+        this.sWarpDest.arg = arg3;
     }
 
     init_level() {
