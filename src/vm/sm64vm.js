@@ -107,6 +107,10 @@ export class SM64vm {
             }
             ref.vm.realm.global.onNewFrame();
         });
+
+        // this.vm.realm.global.warp = function(index) {
+        //     LevelUpdate.initiate_warp(LEVEL_BOB, 1, 0x1F, 0);
+        // };
     }
 
     consoleLog(...text) {
@@ -173,33 +177,33 @@ export class SM64vm {
     setupInterface() {
         var ref = this;
 
-        fetch(new Request('http://localhost:1323/init'))
-            .then(response => response.json())
-            .then(data => {
-                jar.updateCode(data.Text);
-                ref.saveScript(true);
-            })
-            .catch(console.error);
+        // fetch(new Request('http://localhost:1323/init'))
+        //     .then(response => response.json())
+        //     .then(data => {
+        //         jar.updateCode(data.Text);
+        //         ref.saveScript(true);
+        //     })
+        //     .catch(console.error);
 
-        setInterval(async function () {
-            fetch(new Request('http://localhost:1323/script'))
-                .then(response => response.json())
-                .then(data => {
-                    if (data.Text != "") {
-                        jar.updateCode(data.Text);
-                        ref.saveScript();
-                    }
-                })
-                .catch(console.error);
-        }, 10);
+        // setInterval(async function () {
+        //     fetch(new Request('http://localhost:1323/script'))
+        //         .then(response => response.json())
+        //         .then(data => {
+        //             if (data.Text != "") {
+        //                 jar.updateCode(data.Text);
+        //                 ref.saveScript();
+        //             }
+        //         })
+        //         .catch(console.error);
+        // }, 10);
 
 
 
         $("#runScriptButton").prop("disabled", false);
         $("#scriptTextArea").prop("disabled", false);
 
-        // if (localStorage["script"] != "")
-        //     jar.updateCode(localStorage["script"]);
+        if (localStorage["script"] != "")
+            jar.updateCode(localStorage["script"]);
 
         $("#saveScriptButton").click(function () {
             ref.saveScript();

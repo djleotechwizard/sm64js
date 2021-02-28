@@ -217,7 +217,33 @@ class Area {
         }
     }
         
+    unload_area() {
+        if (this.gCurrentArea != null) {
+            ObjectListProc.unload_objects_from_area(0, this.gCurrentArea.index);
+            // geo_call_global_function_nodes(this.gCurrentArea.unk04.node, GEO_CONTEXT_AREA_UNLOAD);
+    
+            this.gCurrentArea.flags = 0;
+            this.gCurrentArea = null;
+            this.gWarpTransition.isActive = false;
+        }
+    }
 
+    change_area(index) {
+        var areaFlags = this.gCurrentArea.flags;
+    
+        if (this.gCurrAreaIndex != index) {
+            this.unload_area();
+            this.load_area(index);
+    
+            this.gCurrentArea.flags = areaFlags;
+            ObjectListProc.gMarioObject.oActiveParticleFlags = 0;
+        }
+    
+        // if (areaFlags & 0x01) {
+        //     ObjectListProc.gMarioObject.header.gfx.areaIndex = index;
+        //     ObjectListProc.gMarioSpawnInfo.areaIndex = index;
+        // }
+    }
 }
 
 export const AreaInstance = new Area()
