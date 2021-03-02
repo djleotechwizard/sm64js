@@ -29,6 +29,18 @@ class HudDisplay {
     }
 };
 
+class HudDisplay {
+    constructor(lives, coins, stars, wedges, keys, flags, timer) {
+        this.lives = lives;
+        this.coins = coins;
+        this.stars = stars;
+        this.wedges = wedges;
+        this.keys = keys;
+        this.flags = flags;
+        this.timer = timer;
+    }
+};
+
 class LevelUpdate {
     constructor() {
         // HUDDisplayFlag enum
