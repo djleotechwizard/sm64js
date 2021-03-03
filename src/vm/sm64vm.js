@@ -4,8 +4,6 @@ import { CodeJar } from 'codejar'
 import Prism from 'prismjs';
 
 import * as Keydrown from "../keydrown.min.js"
-import * as MarioStep from "../game/MarioStep"
-import * as Interact from "../game/Interaction"
 
 import { level_main_scripts_entry } from "../levels/scripts"
 import { LEVEL_CASTLE_GROUNDS, LEVEL_CASTLE, LEVEL_CASTLE_2, LEVEL_CASTLE_COURTYARD, LEVEL_BOB, LEVEL_CCM, LEVEL_PSS, LEVEL_TTM, LEVEL_WF, LEVEL_HMC, LEVEL_BBH, LEVEL_SSL, LEVEL_SL } from "../levels/level_defines_constants"
@@ -24,26 +22,26 @@ const highlight = function (editor) {
 
 let jar = CodeJar(document.querySelector('#scriptTextArea'), highlight);
 
+const levelTable = {
+        "Castle Grounds":               LEVEL_CASTLE_GROUNDS,
+        "Castle Courtyard":             LEVEL_CASTLE_COURTYARD,
+        "Bob-omb Battlefield":          LEVEL_BOB,
+        "Cool, Cool Mountain":          LEVEL_CCM,
+        "Princess's Secret Slide":      LEVEL_PSS,
+        "Tall, Tall Mountain":          LEVEL_TTM,
+        "Whomps Fortress":              LEVEL_WF,
+        "Hazy Maze Cave":               LEVEL_HMC,
+        "Big Boo's Haunt":              LEVEL_BBH,
+        "Shifting Sand Land":           LEVEL_SSL,
+        "Snowman's Land":               LEVEL_SL,
+        "Castle Inside First Level":    LEVEL_CASTLE,
+        "Castle Inside Second Level":   LEVEL_CASTLE_2
+}
+
 const getSelectedLevel = () => {
     const mapSelect = document.getElementById("mapSelect").value
 
-    switch (mapSelect) {
-        case "Castle Grounds": return LEVEL_CASTLE_GROUNDS
-        case "Castle Courtyard": return LEVEL_CASTLE_COURTYARD
-        case "Bob-omb Battlefield": return LEVEL_BOB
-        case "Cool, Cool Mountain": return LEVEL_CCM
-        case "Princess's Secret Slide": return LEVEL_PSS
-        case "Tall, Tall Mountain": return LEVEL_TTM
-        case "Whomps Fortress": return LEVEL_WF
-        case "Hazy Maze Cave": return LEVEL_HMC
-        case "Big Boo's Haunt": return LEVEL_BBH
-        case "Shifting Sand Land": return LEVEL_SSL
-        case "Snowman's Land": return LEVEL_SL
-        case "Castle Inside First Level": return LEVEL_CASTLE
-        case "Castle Inside Second Level": return LEVEL_CASTLE_2
-    }
-
-    return LEVEL_CASTLE_GROUNDS
+    return levelTable[mapSelect];
 }
 
 export class SM64vm {
@@ -90,27 +88,31 @@ export class SM64vm {
         };
 
         this.vm.realm.global.skipIntro = false;
+        this.vm.realm.global.startArea = "Bob-omb Battlefield";
 
-        var skipIntroScript = [
-            { command: LevelCommands.load_area, args: [1] },
-            { command: LevelCommands.transition, args: [8, 20, 0, 0, 0] },
-            { command: LevelCommands.unload_area, args: [1] },
-            { command: LevelCommands.set_register, args: [getSelectedLevel()] },
-            { command: LevelCommands.execute, args: [level_main_scripts_entry] }
-        ]
+        var skipIntroScript = function(level)  {
+            return [
+                { command: LevelCommands.load_area, args: [1] },
+                { command: LevelCommands.transition, args: [8, 20, 0, 0, 0] },
+                { command: LevelCommands.unload_area, args: [1] },
+                { command: LevelCommands.set_register, args: [levelTable[level]] },
+                { command: LevelCommands.execute, args: [level_main_scripts_entry] }
+            ];
+        } 
 
         var skipped = false;
         hooker.hook(Game, "main_loop_one_iteration", function () {
             if (!skipped && ref.vm.realm.global.skipIntro) {
-                LevelCommands.start_new_script(skipIntroScript);
+                var script = skipIntroScript(ref.vm.realm.global.startArea);
+                LevelCommands.start_new_script(script);
                 skipped = true;
             }
             ref.vm.realm.global.onNewFrame();
         });
 
-        // this.vm.realm.global.warp = function(index) {
-        //     LevelUpdate.initiate_warp(LEVEL_BOB, 1, 0x1F, 0);
-        // };
+        this.vm.realm.global.warp = function(index) {
+            LevelUpdate.level_trigger_warp(LevelUpdate.gMarioState, LevelUpdate.WARP_OP_DEATH);
+        };
     }
 
     consoleLog(...text) {
@@ -128,17 +130,17 @@ export class SM64vm {
                 var pos = LevelUpdate.gMarioState.pos;
                 return { x: pos[0], y: pos[1], z: pos[2] };
             },
-            addCoins: function (amount) {
-                var rawData = {}
-                rawData[oDamageOrCoinValue] = amount;
-                Interact.interact_coin(LevelUpdate.gMarioState, { rawData: rawData })
-                if (amount < 0)
-                    LevelUpdate.gHudDisplay.coins = LevelUpdate.gMarioState.numCoins;
-            },
-            setCoins: function (amount) {
-                LevelUpdate.gMarioState.numCoins = amount;
-                LevelUpdate.gHudDisplay.coins = LevelUpdate.gMarioState.numCoins;
-            }
+            // addCoins: function (amount) {
+            //     var rawData = {}
+            //     rawData[oDamageOrCoinValue] = amount;
+            //     Interact.interact_coin(LevelUpdate.gMarioState, { rawData: rawData })
+            //     if (amount < 0)
+            //         LevelUpdate.gHudDisplay.coins = LevelUpdate.gMarioState.numCoins;
+            // },
+            // setCoins: function (amount) {
+            //     LevelUpdate.gMarioState.numCoins = amount;
+            //     LevelUpdate.gHudDisplay.coins = LevelUpdate.gMarioState.numCoins;
+            // }
             // setPosition: function (x, y, z) {
             //     LevelUpdate.gMarioState.pos = [0, 0, 0];
             //     MarioStep.perform_air_step(LevelUpdate.gMarioState, 0);

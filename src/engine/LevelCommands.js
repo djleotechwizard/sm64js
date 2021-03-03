@@ -330,6 +330,27 @@ class LevelCommands {
 
     }
 
+    loop_begin() {
+        this.sCurrentScript.index++;
+    }
+
+    loop_until() {
+        this.sCurrentScript.index -= 2;
+    }
+
+    clear_level() {
+        ObjectListProcessor.clear_objects();
+        // clear_area_graph_nodes();
+        Area.clear_areas();
+        // main_pool_pop_state();
+    
+        this.sCurrentScript.index++;
+    }
+
+    exit(args) {
+        this.return();
+    }
+
 }
 
 export const LevelCommandsInstance = new LevelCommands()

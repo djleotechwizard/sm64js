@@ -1,4 +1,4 @@
-import { WARP_TRANSITION_FADE_INTO_COLOR, WARP_TRANSITION_FADE_FROM_STAR } from "./Area"
+import { WARP_TRANSITION_FADE_INTO_COLOR, WARP_TRANSITION_FADE_FROM_STAR, WARP_TRANSITION_FADE_INTO_BOWSER } from "./Area"
 import { GameInstance as Game } from "./Game"
 import * as Gbi from "../include/gbi"
 import { atan2s } from "../engine/math_util"
@@ -195,6 +195,8 @@ export const render_screen_transition = (fadeTimer, transType, transTime, transD
 		case WARP_TRANSITION_FADE_INTO_COLOR:
 			return render_fade_transition_into_color(fadeTimer, transTime, transData)
 		case WARP_TRANSITION_FADE_FROM_STAR:
+			return render_textured_transition(fadeTimer, transTime, transData, TEX_TRANS_STAR, TRANS_TYPE_MIRROR)
+		case WARP_TRANSITION_FADE_INTO_BOWSER:
 			return render_textured_transition(fadeTimer, transTime, transData, TEX_TRANS_STAR, TRANS_TYPE_MIRROR)
 		default: throw "unknown transition type"
 	}

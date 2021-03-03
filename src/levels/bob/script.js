@@ -30,4 +30,7 @@ export const level_bob_entry = [
     { command: LevelCommands.set_mario_pos, args: [1, 135, -6558, 0, 6464] },
     { command: LevelCommands.call, args: [0, LevelUpdate.lvl_init_or_update, LevelUpdate] },
     { command: LevelCommands.call_loop, args: [1, LevelUpdate.lvl_init_or_update, LevelUpdate] },
+    { command: LevelCommands.clear_level },
+    { command: LevelCommands.sleep, args: [1] },
+    { command: LevelCommands.exit },
 ]
